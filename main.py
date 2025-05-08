@@ -4,15 +4,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import (
     mean_squared_error, 
     mean_absolute_error, 
     mean_absolute_percentage_error, 
     r2_score
 )
+import sklearn.datasets
+import sklearn.metrics
 import xgboost as xgb
+import optuna
 import os
+
+
 
 OUTPUT_DIR = "outputs"
 if not os.path.exists(OUTPUT_DIR):
@@ -127,46 +131,46 @@ def build_and_evaluate(X_train, X_test, y_train, y_test):
 
     return model
 
-
-def optimize_model(X_train, X_test, y_train, y_test):
-    model = xgb.XGBRegressor(objective='reg:squarederror', random_state=42)
-
-    param_grid = {
-        'n_estimators': [100, 200],
-        'max_depth': [3, 5, 7],
-        'learning_rate': [0.05, 0.1, 0.2],
-        'subsample': [0.8, 1.0]
+def objective(trial, X_train, X_test, y_train, y_test):
+    params = {
+        "objective": "reg:squarederror",
+        "n_estimators": trial.suggest_int("n_estimators", 100, 300),
+        "max_depth": trial.suggest_int("max_depth", 3, 10),
+        "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+        "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+        "random_state": 42,
     }
 
-    grid_search = GridSearchCV(
-        estimator=model,
-        param_grid=param_grid,
-        scoring='r2',
-        cv=3,
-        verbose=1,
-        n_jobs=-1
-    )
+    model = xgb.XGBRegressor(**params, verbosity=0)
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
 
-    grid_search.fit(X_train, y_train)
+    r2 = r2_score(y_test, preds)
+    mae = mean_absolute_error(y_test, preds)
+    mse = mean_squared_error(y_test, preds)
+    mape = mean_absolute_percentage_error(y_test, preds)
 
-    best_model = grid_search.best_estimator_
-    best_params = grid_search.best_params_
+    trial.set_user_attr("mae", mae)
+    trial.set_user_attr("mse", mse)
+    trial.set_user_attr("mape", mape)
 
-    y_predict_best = best_model.predict(X_test)
+    print(f"Trial {trial.number}: R2={r2:.4f} | MAE={mae:.4f} | MSE={mse:.4f} | MAPE={mape:.4f}")
+    
+    return r2
 
-    mse_best = mean_squared_error(y_test, y_predict_best)
-    mae_best = mean_absolute_error(y_test, y_predict_best)
-    mape_best = mean_absolute_percentage_error(y_test, y_predict_best)
-    r2_best = r2_score(y_test, y_predict_best)
+def optimize_model(X_train, X_test, y_train, y_test):
+    study = optuna.create_study(direction="maximize")
+    study.optimize(lambda trial: objective(trial, X_train, X_test, y_train, y_test), n_trials=50)
+    best_trial = study.best_trial
 
-    print("\nOptimized XGBoost Model Performance Metrics:")
-    print(f"Mean Squared Error (MSE): {mse_best:.4f}")
-    print(f"Mean Absolute Error (MAE): {mae_best:.4f}")
-    print(f"Mean Absolute Percentage Error (MAPE): {mape_best:.4f}")
-    print(f"R2 Score: {r2_best:.4f}")
+    print("\nBest trial:")
+    print(f"R2 Score: {best_trial.value:.4f}")
+    print(f"MAE: {best_trial.user_attrs['mae']:.4f}")
+    print(f"MSE: {best_trial.user_attrs['mse']:.4f}")
+    print(f"MAPE: {best_trial.user_attrs['mape']:.4f}")
 
-    return best_model
-
+    return best_trial
 
 
 def main():
@@ -180,8 +184,7 @@ def main():
     
     model = build_and_evaluate(X_train, X_test, y_train, y_test)
 
-    optimized_model = optimize_model(X_train, X_test, y_train, y_test)  
-
+    best_trial = optimize_model(X_train, X_test, y_train, y_test)
 
 if __name__ == "__main__":
     main()
