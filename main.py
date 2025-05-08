@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import (
     mean_squared_error, 
     mean_absolute_error, 
@@ -78,7 +79,9 @@ def preprocess_data(data: pd.DataFrame):
     return X_train, X_test, y_train, y_test
 
 
-def build_and_evaluate_xgboost(X_train, X_test, y_train, y_test):
+
+
+def build_and_evaluate(X_train, X_test, y_train, y_test):
     model = xgb.XGBRegressor(
         objective='reg:squarederror', 
         random_state=42,
@@ -125,6 +128,47 @@ def build_and_evaluate_xgboost(X_train, X_test, y_train, y_test):
     return model
 
 
+def optimize_model(X_train, X_test, y_train, y_test):
+    model = xgb.XGBRegressor(objective='reg:squarederror', random_state=42)
+
+    param_grid = {
+        'n_estimators': [100, 200],
+        'max_depth': [3, 5, 7],
+        'learning_rate': [0.05, 0.1, 0.2],
+        'subsample': [0.8, 1.0]
+    }
+
+    grid_search = GridSearchCV(
+        estimator=model,
+        param_grid=param_grid,
+        scoring='r2',
+        cv=3,
+        verbose=1,
+        n_jobs=-1
+    )
+
+    grid_search.fit(X_train, y_train)
+
+    best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+
+    y_predict_best = best_model.predict(X_test)
+
+    mse_best = mean_squared_error(y_test, y_predict_best)
+    mae_best = mean_absolute_error(y_test, y_predict_best)
+    mape_best = mean_absolute_percentage_error(y_test, y_predict_best)
+    r2_best = r2_score(y_test, y_predict_best)
+
+    print("\nOptimized XGBoost Model Performance Metrics:")
+    print(f"Mean Squared Error (MSE): {mse_best:.4f}")
+    print(f"Mean Absolute Error (MAE): {mae_best:.4f}")
+    print(f"Mean Absolute Percentage Error (MAPE): {mape_best:.4f}")
+    print(f"R2 Score: {r2_best:.4f}")
+
+    return best_model
+
+
+
 def main():
     file_path = "data/data.xlsx"
     
@@ -134,7 +178,10 @@ def main():
 
     X_train, X_test, y_train, y_test = preprocess_data(data)
     
-    model = build_and_evaluate_xgboost(X_train, X_test, y_train, y_test)
+    model = build_and_evaluate(X_train, X_test, y_train, y_test)
+
+    optimized_model = optimize_model(X_train, X_test, y_train, y_test)  
+
 
 if __name__ == "__main__":
     main()
