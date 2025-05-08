@@ -16,7 +16,7 @@ import xgboost as xgb
 import optuna
 import os
 
-
+g_model = None
 
 OUTPUT_DIR = "outputs"
 if not os.path.exists(OUTPUT_DIR):
@@ -84,7 +84,6 @@ def preprocess_data(data: pd.DataFrame):
 
 
 
-
 def build_and_evaluate(X_train, X_test, y_train, y_test):
     model = xgb.XGBRegressor(
         objective='reg:squarederror', 
@@ -132,6 +131,8 @@ def build_and_evaluate(X_train, X_test, y_train, y_test):
     return model
 
 def objective(trial, X_train, X_test, y_train, y_test):
+    global g_model
+    
     params = {
         "objective": "reg:squarederror",
         "n_estimators": trial.suggest_int("n_estimators", 100, 300),
@@ -157,6 +158,8 @@ def objective(trial, X_train, X_test, y_train, y_test):
 
     print(f"Trial {trial.number}: R2={r2:.4f} | MAE={mae:.4f} | MSE={mse:.4f} | MAPE={mape:.4f}")
     
+    g_model = model
+
     return r2
 
 def optimize_model(X_train, X_test, y_train, y_test):
@@ -169,6 +172,29 @@ def optimize_model(X_train, X_test, y_train, y_test):
     print(f"MAE: {best_trial.user_attrs['mae']:.4f}")
     print(f"MSE: {best_trial.user_attrs['mse']:.4f}")
     print(f"MAPE: {best_trial.user_attrs['mape']:.4f}")
+
+    feature_importance = pd.DataFrame({
+        'feature': X_train.columns,
+        'importance': g_model.feature_importances_
+    }).sort_values('importance', ascending=False)
+
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='importance', y='feature', data=feature_importance)
+    plt.title('Optimized Feature Importance')
+    plt.xlabel('Importance Score')
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR,'optimized_feature_importance.png'))
+    plt.close()
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(y_test, g_model.predict(X_test), alpha=0.5)
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+    plt.xlabel('Actual PM2.5')
+    plt.ylabel('Predicted PM2.5')
+    plt.title('Optimized Actual vs Predicted PM2.5 Levels')
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR,'optimized_xgboost_actual_vs_predicted.png'))
+    plt.close()
 
     return best_trial
 
