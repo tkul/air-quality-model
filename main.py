@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
     mean_squared_error, 
@@ -10,8 +13,6 @@ from sklearn.metrics import (
     mean_absolute_percentage_error, 
     r2_score
 )
-import sklearn.datasets
-import sklearn.metrics
 import xgboost as xgb
 import optuna
 import os
@@ -46,7 +47,7 @@ def load_and_preprocess_data(file_path):
     for col in numeric_cols:
         mean_value = data[col].mean()
         data[col] = data[col].fillna(mean_value)
-        # print(f"Column {col} filled with mean value: {mean_value:.4f}")
+        print(f"Column {col} filled with mean value: {mean_value:.4f}")
     
     categorical_cols = data.select_dtypes(include=['object']).columns
     data[categorical_cols] = data[categorical_cols].fillna("Unknown")
@@ -68,19 +69,53 @@ def load_and_preprocess_data(file_path):
 
 
 def preprocess_data(data: pd.DataFrame):
-    X = data[["PM10 (μg/m3)", "NO2 (μg/m3)", "PM10 temporal coverage (%)", "NO2 temporal coverage (%)", "PM25 temporal coverage (%)"]]
-    y = data["PM2.5 (μg/m3)"]
+    numeric_features = ["PM10 (μg/m3)", "NO2 (μg/m3)",
+                        "PM10 temporal coverage (%)", "NO2 temporal coverage (%)",
+                        "PM25 temporal coverage (%)"]
 
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    onehot_features = ["WHO Region"]
+    ordinal_features = ["ISO3", "WHO Country Name"]
 
-    X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
-    
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, y, test_size=0.2, random_state=42
+    target = "PM2.5 (μg/m3)"
+
+    X = data[numeric_features + onehot_features + ordinal_features]
+    y = data[target]
+
+    numeric_transformer = Pipeline(steps=[
+        ("scaler", StandardScaler())
+    ])
+
+    onehot_transformer = Pipeline(steps=[
+        ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
+    ])
+
+    ordinal_transformer = Pipeline(steps=[
+        ("ordinal", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1))
+    ])
+
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", numeric_transformer, numeric_features),
+            ("onehot", onehot_transformer, onehot_features),
+            ("ordinal", ordinal_transformer, ordinal_features)
+        ]
     )
-    
-    return X_train, X_test, y_train, y_test
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    X_train_processed = preprocessor.fit_transform(X_train)
+    X_test_processed = preprocessor.transform(X_test)
+
+    onehot_columns = preprocessor.named_transformers_['onehot']['onehot'].get_feature_names_out(onehot_features)
+    all_columns = list(numeric_features) + list(onehot_columns) + list(ordinal_features)
+
+    X_train_processed = pd.DataFrame(X_train_processed, columns=all_columns)
+    X_test_processed = pd.DataFrame(X_test_processed, columns=all_columns)
+
+    return X_train_processed, X_test_processed, y_train, y_test
 
 
 
@@ -147,10 +182,10 @@ def objective(trial, X_train, X_test, y_train, y_test):
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
 
-    r2 = r2_score(y_test, preds)
-    mae = mean_absolute_error(y_test, preds)
     mse = mean_squared_error(y_test, preds)
+    mae = mean_absolute_error(y_test, preds)
     mape = mean_absolute_percentage_error(y_test, preds)
+    r2 = r2_score(y_test, preds)
 
     trial.set_user_attr("mae", mae)
     trial.set_user_attr("mse", mse)
@@ -168,10 +203,10 @@ def optimize_model(X_train, X_test, y_train, y_test):
     best_trial = study.best_trial
 
     print("\nBest trial:")
+    print(f"Mean Squared Error (MSE): {best_trial.user_attrs['mse']:.4f}")
+    print(f"Mean Absolute Error (MAE): {best_trial.user_attrs['mae']:.4f}")
+    print(f"Mean Absolute Percentage Error (MAPE): {best_trial.user_attrs['mape']:.4f}")
     print(f"R2 Score: {best_trial.value:.4f}")
-    print(f"MAE: {best_trial.user_attrs['mae']:.4f}")
-    print(f"MSE: {best_trial.user_attrs['mse']:.4f}")
-    print(f"MAPE: {best_trial.user_attrs['mape']:.4f}")
 
     feature_importance = pd.DataFrame({
         'feature': X_train.columns,
