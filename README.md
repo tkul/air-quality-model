@@ -6,30 +6,16 @@
 
 This project analyzes air quality data and builds a predictive model using XGBoost. It includes data preprocessing, feature engineering, model optimization with Optuna, and result visualization.
 
-## 📁 Project Structure
-
-air\_quality/
-├── main.py — Main script for training and evaluation
-├── requirements.txt — Python dependencies
-├── data/
-│   └── data.xlsx — Raw air quality dataset
-└── outputs/
-  ├── correlation\_matrix.png
-  ├── feature\_importance.png
-  ├── optimized\_feature\_importance.png
-  ├── xgboost\_actual\_vs\_predicted.png
-  └── optimized\_xgboost\_actual\_vs\_predicted.png
 
 ## ⚙️ Installation
 
-1. Extract the archive or clone the repository.
-2. (Optional) Create and activate a virtual environment:
+1. (Optional) Create and activate a virtual environment:
 
    ```
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-3. Install dependencies:
+2. Install dependencies:
 
    ```
    pip install -r requirements.txt
