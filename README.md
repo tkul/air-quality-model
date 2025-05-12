@@ -1,38 +1,32 @@
-```markdown
-# Air Quality Prediction with XGBoost
+````markdown
+# Air Quality Prediction Project
 
-This project analyzes air quality data and builds a predictive model using XGBoost. It includes preprocessing, feature importance analysis, and performance evaluation of the model.
+This project analyzes air quality data and builds a predictive model using XGBoost. It includes data preprocessing, feature engineering, model optimization with Optuna, and result visualization.
 
 ## 📁 Project Structure
 
-```
+air_quality_with_tables/
+├── main.py                         # Main script for training and evaluation  
+├── requirements.txt               # Python dependencies  
+├── data/  
+│   └── data.xlsx                  # Raw air quality dataset  
+└── outputs/  
+    ├── correlation_matrix.png  
+    ├── feature_importance.png  
+    ├── optimized_feature_importance.png  
+    ├── xgboost_actual_vs_predicted.png  
+    └── optimized_xgboost_actual_vs_predicted.png  
 
-air\_quality\_with\_tables/
-├── main.py                       # Main script to run the analysis and modeling
-├── requirements.txt             # Python dependencies
-├── data/
-│   └── data.xlsx                # Raw air quality dataset
-└── outputs/
-├── correlation\_matrix.png
-├── feature\_importance.png
-├── xgboost\_actual\_vs\_predicted.png
-├── optimized\_feature\_importance.png
-└── optimized\_xgboost\_actual\_vs\_predicted.png
+## ⚙️ Installation
 
-````
-
-## ⚙️ Setup & Installation
-
-1. Clone this repository or extract the archive.
-2. Navigate to the project directory.
-3. (Optional but recommended) Create a virtual environment:
-
+1. Extract the archive or clone the repository.
+2. (Optional) Create and activate a virtual environment:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
 ````
 
-4. Install required packages:
+3. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
@@ -40,7 +34,7 @@ air\_quality\_with\_tables/
 
 ## 🚀 Usage
 
-Run the analysis and model training with:
+To run the main analysis and modeling pipeline:
 
 ```bash
 python main.py
@@ -48,27 +42,17 @@ python main.py
 
 The script will:
 
-* Load and preprocess the data.
-* Train a base XGBoost model.
-* Use Optuna to optimize hyperparameters.
-* Generate outputs (charts and performance plots) in the `outputs/` directory.
+* Load and preprocess the dataset
+* Train an XGBoost model
+* Perform hyperparameter optimization using Optuna
+* Generate result visualizations in the `outputs/` directory
 
-## 📊 Outputs
+## 📊 Output Files
 
-Generated images include:
-
-* `correlation_matrix.png`: Correlation between features
-* `feature_importance.png`: Feature importance from the base model
-* `optimized_feature_importance.png`: Feature importance from the optimized model
-* `xgboost_actual_vs_predicted.png`: Model performance plot (base)
-* `optimized_xgboost_actual_vs_predicted.png`: Model performance plot (optimized)
-
-## 📄 License
-
-This project is for educational and research purposes.
-
-```
-
----
+* `correlation_matrix.png`: Feature correlation heatmap
+* `feature_importance.png`: Importance of features (baseline model)
+* `optimized_feature_importance.png`: Importance of features (optimized model)
+* `xgboost_actual_vs_predicted.png`: Prediction results (baseline)
+* `optimized_xgboost_actual_vs_predicted.png`: Prediction results (optimized)
 
 ```
