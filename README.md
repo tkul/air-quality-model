@@ -1,7 +1,3 @@
-İşte sadece **kod** kısımları kutu içinde olacak şekilde sadeleştirilmiş ve lisans + gereksinimler bölümü çıkarılmış İngilizce `README.md`:
-
----
-
 # Air Quality Prediction Project
 
 This project analyzes air quality data and builds a predictive model using XGBoost. It includes data preprocessing, feature engineering, model optimization with Optuna, and result visualization.
@@ -12,7 +8,7 @@ This project analyzes air quality data and builds a predictive model using XGBoo
 1. (Optional) Create and activate a virtual environment:
 
    ```
-   python -m venv venv
+   python -m venv .venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 2. Install dependencies:
@@ -44,5 +40,3 @@ This will:
 * `optimized_xgboost_actual_vs_predicted.png`: Actual vs Predicted (optimized)
 
 ---
-
-Hazırsa bu metni senin için `README.md` dosyası olarak klasöre kaydedeyim mi?
