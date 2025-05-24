@@ -16,6 +16,7 @@ from sklearn.metrics import (
 import xgboost as xgb
 import optuna
 import os
+import joblib
 
 g_model = None
 
@@ -115,7 +116,7 @@ def preprocess_data(data: pd.DataFrame):
     X_train_processed = pd.DataFrame(X_train_processed, columns=all_columns)
     X_test_processed = pd.DataFrame(X_test_processed, columns=all_columns)
 
-    return X_train_processed, X_test_processed, y_train, y_test
+    return X_train_processed, X_test_processed, y_train, y_test, preprocessor
 
 
 
@@ -197,7 +198,7 @@ def objective(trial, X_train, X_test, y_train, y_test):
 
     return r2
 
-def optimize_model(X_train, X_test, y_train, y_test):
+def optimize_model(X_train, X_test, y_train, y_test, preprocessor):
     study = optuna.create_study(direction="maximize")
     study.optimize(lambda trial: objective(trial, X_train, X_test, y_train, y_test), n_trials=50)
     best_trial = study.best_trial
@@ -231,6 +232,10 @@ def optimize_model(X_train, X_test, y_train, y_test):
     plt.savefig(os.path.join(OUTPUT_DIR,'optimized_xgboost_actual_vs_predicted.png'))
     plt.close()
 
+    # Save the optimized model and preprocessor
+    joblib.dump(g_model, "xgb_model.pkl")
+    joblib.dump(preprocessor, "preprocessor.pkl")
+
     return best_trial
 
 
@@ -241,11 +246,11 @@ def main():
     if data is None:
         return
 
-    X_train, X_test, y_train, y_test = preprocess_data(data)
+    X_train, X_test, y_train, y_test, preprocessor = preprocess_data(data)
     
     model = build_and_evaluate(X_train, X_test, y_train, y_test)
 
-    best_trial = optimize_model(X_train, X_test, y_train, y_test)
+    best_trial = optimize_model(X_train, X_test, y_train, y_test, preprocessor)
 
 if __name__ == "__main__":
     main()
