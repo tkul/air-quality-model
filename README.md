@@ -1,42 +1,52 @@
-# Air Quality Prediction Project
+# Air Quality Prediction
 
-This project analyzes air quality data and builds a predictive model using XGBoost. It includes data preprocessing, feature engineering, model optimization with Optuna, and result visualization.
+This project is a full-stack machine learning application that predicts **PM2.5 air pollution levels** using city-based environmental and geographic data. It includes data preprocessing, model training and optimization (with Optuna), and a deployed web application built with Streamlit.
+
+🔗 Live Demo: [https://airquality.tugcekul.com](https://airquality.tugcekul.com)
+
+---
+
+## 📊 About the Project
+
+- **Dataset:** WHO's 2022 global urban air quality dataset (`AAP_2022_city_v9`)
+- **Target:** Predict `PM2.5 (μg/m3)` levels based on inputs like PM10, NO2, region, and country
+- **Model:** XGBoost Regressor
+- **Optimization:** Hyperparameter tuning using Optuna
+- **Deployment:** Streamlit app served via NGINX on a custom domain
+
+---
 
 
-## ⚙️ Installation
+## 🛠️ Installation (Local Development)
 
-1. (Optional) Create and activate a virtual environment:
+### Create a virtual environment and install dependencies
 
-   ```
-   python -m venv .venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-2. Install dependencies:
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-## 🚀 Usage
-
-Run the main pipeline with:
-
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
-python main.py
+
+### Run Streamlit App
+
+```bash
+streamlit run app.py
 ```
 
-This will:
 
-* Load and preprocess the dataset
-* Train a base and optimized XGBoost model
-* Save visual outputs to the `outputs/` directory
+## 🧪 Example Inputs
 
-## 📊 Output Files
+* PM10: 50 μg/m³
+* NO2: 30 μg/m³
+* WHO Region: Western Pacific
+* ISO3: TUR
+* Country Name: Turkey
 
-* `correlation_matrix.png`: Feature correlation heatmap
-* `feature_importance.png`: Feature importance (baseline)
-* `optimized_feature_importance.png`: Feature importance (optimized)
-* `xgboost_actual_vs_predicted.png`: Actual vs Predicted (baseline)
-* `optimized_xgboost_actual_vs_predicted.png`: Actual vs Predicted (optimized)
+---
+
+## 📈 Example Outputs
+
+* PM2.5 prediction: \~33.27 μg/m³
+* Feature importance and prediction scatterplots automatically generated
 
 ---
