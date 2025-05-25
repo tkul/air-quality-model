@@ -1,5 +1,4 @@
 .venv
-Untitled18.ipynb
 outputs/*
 preprocessor.pkl
 xgb_model.pkl

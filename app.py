@@ -3,14 +3,11 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# Page configuration
 st.set_page_config(page_title="PM2.5 Prediction", layout="centered")
 
-# Title
 st.title("🌍 PM2.5 Air Pollution Prediction App")
 st.write("Estimate PM2.5 levels based on environmental and regional input data.")
 
-# Load model and preprocessor
 @st.cache_resource
 def load_model():
     model = joblib.load("xgb_model.pkl")
@@ -19,8 +16,7 @@ def load_model():
 
 model, preprocessor = load_model()
 
-# Input form
-st.subheader("🔢 Input Parameters")
+st.subheader("Input Parameters")
 
 with st.form("prediction_form"):
     pm10 = st.slider("PM10 (μg/m³)", 0.0, 200.0, 50.0)
@@ -37,9 +33,8 @@ with st.form("prediction_form"):
     iso3 = st.text_input("ISO3 Country Code", "TUR")
     country = st.text_input("Country Name", "Turkey")
 
-    submit = st.form_submit_button("🚀 Predict")
+    submit = st.form_submit_button("Predict")
 
-# Prediction
 if submit:
     input_df = pd.DataFrame([{
         "PM10 (μg/m3)": pm10,
@@ -55,6 +50,6 @@ if submit:
     try:
         transformed = preprocessor.transform(input_df)
         prediction = model.predict(transformed)[0]
-        st.success(f"🌫️ Estimated PM2.5 Level: {prediction:.2f} μg/m³")
+        st.success(f"Estimated PM2.5 Level: {prediction:.2f} μg/m³")
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
