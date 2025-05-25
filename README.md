@@ -6,7 +6,7 @@ This project is a full-stack machine learning application that predicts **PM2.5 
 
 ---
 
-## 📊 About the Project
+## About the Project
 
 - **Dataset:** WHO's 2022 global urban air quality dataset (`AAP_2022_city_v9`)
 - **Target:** Predict `PM2.5 (μg/m3)` levels based on inputs like PM10, NO2, region, and country
@@ -17,7 +17,7 @@ This project is a full-stack machine learning application that predicts **PM2.5 
 ---
 
 
-## 🛠️ Installation (Local Development)
+## Installation (Local Development)
 
 ### Create a virtual environment and install dependencies
 
@@ -34,7 +34,7 @@ streamlit run app.py
 ```
 
 
-## 🧪 Example Inputs
+## Example Inputs
 
 * PM10: 50 μg/m³
 * NO2: 30 μg/m³
@@ -44,7 +44,7 @@ streamlit run app.py
 
 ---
 
-## 📈 Example Outputs
+## Example Outputs
 
 * PM2.5 prediction: \~33.27 μg/m³
 * Feature importance and prediction scatterplots automatically generated
